@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Интерактивная викторина о контейнерах: от чашки до Scratch.">
+  <title>Что такое контейнер? — викторина Scratch</title>
+  <style>
+    :root {
+      --ink: #19213b;
+      --muted: #64718f;
+      --paper: #f6f8ff;
+      --card: #ffffff;
+      --line: #dfe5f4;
+      --violet: #6557df;
+      --violet-dark: #493bb8;
+      --teal: #17a6a0;
+      --sun: #ffc94d;
+      --good: #178b63;
+      --bad: #cf4e61;
+      --shadow: 0 14px 35px rgba(49, 62, 118, .11);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--ink);
+      font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 9% 4%, #dff7fa 0, transparent 24rem),
+        radial-gradient(circle at 93% 15%, #eee6ff 0, transparent 26rem),
+        var(--paper);
+    }
+
+    button, select { font: inherit; }
+    button { cursor: pointer; }
+    .shell { width: min(1020px, calc(100% - 32px)); margin: 0 auto; }
+
+    .hero { padding: 54px 0 34px; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin: 0 0 12px; padding: 6px 11px; border-radius: 999px;
+      color: #3d328f; font-size: .85rem; font-weight: 750;
+      letter-spacing: .02em; background: #e9e5ff;
+    }
+    h1 { max-width: 720px; margin: 0; font-size: clamp(2.1rem, 6vw, 4.25rem); line-height: 1.03; letter-spacing: -.045em; }
+    .lead { max-width: 690px; margin: 18px 0 0; color: #465371; font-size: clamp(1rem, 2.2vw, 1.2rem); }
+    .legend {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+      margin-top: 30px;
+    }
+    .legend article { min-height: 114px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.8); }
+    .legend b { display: block; margin-bottom: 3px; font-size: .98rem; }
+    .legend span { color: var(--muted); font-size: .91rem; }
+    .symbol { display: inline-block; margin-right: 7px; font-size: 1.25em; }
+
+    .quiz { margin: 0 0 62px; padding: 24px; border: 1px solid var(--line); border-radius: 24px; background: var(--card); box-shadow: var(--shadow); }
+    .topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+    .counter { color: var(--muted); font-size: .9rem; font-weight: 700; }
+    .score-pill { padding: 6px 12px; border-radius: 999px; color: #314055; font-size: .9rem; font-weight: 750; background: #f1f4fa; }
+    .progress { height: 10px; overflow: hidden; margin-bottom: 27px; border-radius: 999px; background: #e8edf8; }
+    .progress > span { display: block; width: 0%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--teal), var(--violet)); transition: width .35s ease; }
+
+    .phase-tag { display: inline-flex; align-items: center; gap: 7px; padding: 5px 10px; border-radius: 999px; color: #077876; font-size: .83rem; font-weight: 800; background: #dff8f5; }
+    .question-title { margin: 11px 0 8px; font-size: clamp(1.3rem, 3vw, 1.8rem); line-height: 1.22; letter-spacing: -.025em; }
+    .question-copy { margin: 0 0 19px; color: var(--muted); }
+    .code-chip { display: inline-block; padding: 2px 7px; border-radius: 5px; color: #312877; background: #efedff; font: .93em ui-monospace, SFMono-Regular, Consolas, monospace; }
+
+    .answers { display: grid; gap: 10px; }
+    .answer {
+      display: flex; align-items: flex-start; gap: 11px; width: 100%; padding: 13px 14px;
+      border: 1px solid var(--line); border-radius: 13px; color: var(--ink); text-align: left; background: #fff; transition: transform .15s, border-color .15s, background .15s;
+    }
+    .answer:not(:disabled):hover { border-color: #9f96f1; transform: translateY(-1px); background: #fbfaff; }
+    .answer:focus-visible, .primary:focus-visible, .secondary:focus-visible, select:focus-visible { outline: 3px solid #ffcc4d; outline-offset: 2px; }
+    .answer-letter { flex: 0 0 27px; width: 27px; height: 27px; display: grid; place-items: center; border-radius: 50%; color: #544ca2; font-size: .82rem; font-weight: 800; background: #efedff; }
+    .answer.correct { border-color: #5bbd9d; color: #075d46; background: #edfbf5; }
+    .answer.wrong { border-color: #eea1ad; color: #9e2c40; background: #fff2f4; }
+    .answer:disabled { cursor: default; }
+    .feedback { min-height: 32px; margin: 17px 0 0; padding: 10px 12px; border-radius: 10px; font-size: .94rem; }
+    .feedback:empty { display: none; }
+    .feedback.good { color: #075d46; background: #e9faf2; }
+    .feedback.bad { color: #8d273a; background: #fff0f2; }
+    .navigation { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    .primary, .secondary { padding: 11px 16px; border: 0; border-radius: 11px; font-weight: 800; }
+    .primary { color: white; background: var(--violet); box-shadow: 0 6px 15px rgba(89,75,201,.2); }
+    .primary:hover { background: var(--violet-dark); }
+    .primary:disabled { cursor: not-allowed; opacity: .48; }
+    .secondary { color: #4f469a; background: #eeecff; }
+    .secondary:hover { background: #e4e1ff; }
+
+    .match-wrap { display: none; }
+    .match-intro { padding: 17px; border-left: 4px solid var(--sun); border-radius: 12px; color: #465371; background: #fffae9; }
+    .match-list { display: grid; gap: 10px; margin: 20px 0; }
+    .match-row { display: grid; grid-template-columns: minmax(130px, .82fr) minmax(180px, 1.18fr); gap: 13px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 12px; }
+    .match-item { font-weight: 750; }
+    .match-row select { width: 100%; padding: 10px; border: 1px solid #bdc8e1; border-radius: 9px; color: var(--ink); background: #fff; }
+    .match-row.correct { border-color: #66c4a5; background: #effbf6; }
+    .match-row.wrong { border-color: #efadb7; background: #fff5f6; }
+    .match-row select:disabled { opacity: 1; color: inherit; }
+    .match-correction { grid-column: 1 / -1; margin: -3px 0 0; color: #8d273a; font-size: .9rem; }
+    .final-feedback { margin: 15px 0; }
+
+    .result { display: none; text-align: center; padding: 12px 4px 3px; }
+    .result-mark { width: 74px; height: 74px; display: grid; place-items: center; margin: 0 auto 12px; border-radius: 50%; font-size: 2.2rem; background: #fff4cd; }
+    .result h2 { margin: 0; font-size: clamp(1.7rem, 4vw, 2.45rem); letter-spacing: -.035em; }
+    .result p { max-width: 600px; margin: 11px auto 22px; color: var(--muted); }
+    .recap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 22px 0; text-align: left; }
+    .recap div { padding: 13px; border: 1px solid var(--line); border-radius: 12px; background: #fafbff; }
+    .recap b { display: block; color: var(--violet); font-size: 1.3rem; }
+    .recap span { color: var(--muted); font-size: .86rem; }
+    .takeaway { padding: 16px; border-radius: 14px; color: #314055; text-align: left; background: #f0f8ff; }
+    .takeaway strong { color: #174e76; }
+
+    footer { padding: 0 0 36px; color: #7a85a1; font-size: .88rem; text-align: center; }
+    @media (max-width: 680px) {
+      .hero { padding-top: 36px; }
+      .legend, .recap { grid-template-columns: 1fr; }
+      .quiz { padding: 18px; border-radius: 18px; }
+      .match-row { grid-template-columns: 1fr; gap: 7px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <p class="eyebrow">🧠 Интерактивная викторина · Scratch</p>
+      <h1>Что такое контейнер?</h1>
+      <p class="lead">Пройдём путь от чашки и гаража к переменным, спискам и объектам Scratch. В конце — практическое сопоставление.</p>
+      <section class="legend" aria-label="Три важных понятия">
+        <article><b><span class="symbol">📦</span>Физический контейнер</b><span>Вмещает предметы, людей или жидкости: коробка, машина, чашка.</span></article>
+        <article><b><span class="symbol">💾</span>Носитель информации</b><span>Сохраняет записанные данные: бумага, флешка, диск.</span></article>
+        <article><b><span class="symbol">⌘</span>Структура данных</b><span>Организует значения в программе: переменная или список.</span></article>
+      </section>
+    </header>
+
+    <section class="quiz" aria-label="Викторина о контейнерах">
+      <div id="game" aria-live="polite">
+        <div class="topline">
+          <span class="counter" id="counter">Вопрос 1 из 17</span>
+          <span class="score-pill" id="score">Баллы: 0</span>
+        </div>
+        <div class="progress" aria-label="Ход викторины"><span id="progressFill"></span></div>
+
+        <div id="questionView">
+          <span class="phase-tag" id="phaseTag"></span>
+          <h2 class="question-title" id="questionTitle"></h2>
+          <p class="question-copy" id="questionCopy"></p>
+          <div class="answers" id="answers" role="group" aria-label="Варианты ответа"></div>
+          <div id="feedback" class="feedback" role="status"></div>
+          <div class="navigation"><button class="primary" id="nextButton" type="button" disabled>Далее →</button></div>
+        </div>
+
+        <div class="match-wrap" id="matchView">
+          <span class="phase-tag">🧩 Практика</span>
+          <h2 class="question-title">Подбери подходящий контейнер</h2>
+          <p class="match-intro">Сопоставь содержимое с тем, что лучше всего его хранит или организует. Здесь встречаются все три уровня: физический мир, информация и Scratch.</p>
+          <div class="match-list" id="matchList"></div>
+          <p class="feedback final-feedback" id="matchFeedback" role="status"></p>
+          <div class="navigation"><button class="primary" id="checkMatching" type="button">Проверить сопоставление</button></div>
+        </div>
+
+        <div class="result" id="resultView">
+          <div class="result-mark" id="resultMark">🎉</div>
+          <h2 id="resultTitle">Готово!</h2>
+          <p id="resultText"></p>
+          <div class="recap" id="recap"></div>
+          <div class="takeaway"><strong>Главная мысль.</strong> Контейнер — это полезная метафора, но важно называть уровень точно: чашка физически вмещает воду; флешка хранит данные; переменная и список организуют данные в программе. В Scratch <strong>спрайт</strong> объединяет свои скрипты, костюмы и звуки, а <strong>сцена</strong> имеет собственные фоны и скрипты.</div>
+          <div class="navigation" style="justify-content:center"><button class="primary" id="restart" type="button">Пройти ещё раз</button></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>Можно открыть этот файл в любом современном браузере — подключение к интернету не требуется.</footer>
+
+  <script>
+    const questions = [
+      { phase: '1 · Физический мир', icon: '📦', title: 'Что общего у чашки, гаража и коробки?', copy: 'Посмотри на их назначение, а не на материал или форму.', options: ['Они сделаны из одного материала.', 'Они могут что-то содержать.', 'У них обязательно есть крышка.', 'Они перевозят людей.'], answer: 1, note: 'Верно. Все они могут быть контейнерами, хотя их содержимое разное.' },
+      { phase: '1 · Физический мир', icon: '🚗', title: 'Что является контейнером для автомобиля?', copy: 'Выбери место, в котором автомобиль можно хранить.', options: ['Дорога.', 'Гараж.', 'Двигатель.', 'Колесо.'], answer: 1, note: 'Гараж вмещает и защищает автомобиль.' },
+      { phase: '1 · Физический мир', icon: '🥤', title: 'Что может быть содержимым контейнера?', copy: 'Подумай о разных примерах: чашке, машине, коробке.', options: ['Только жидкость.', 'Только твёрдые предметы.', 'Разные объекты — это зависит от типа контейнера.', 'Только живые существа.'], answer: 2, note: 'Именно так: чашка может содержать напиток, машина — пассажиров, коробка — книги.' },
+      { phase: '1 · Физический мир', icon: '🔗', title: 'Может ли один объект быть контейнером для другого?', copy: 'Контейнером бывает не только специальная ёмкость.', options: ['Нет, только предмет с крышкой.', 'Да: например, машина для пассажира.', 'Только в компьютерных программах.', 'Только для жидкостей.'], answer: 1, note: 'Да. Важно отношение «содержит», а не форма предмета.' },
+      { phase: '2 · Информация', icon: '📝', title: 'Что общего у бумаги и флешки?', copy: 'Они совсем разные физически, но выполняют похожую роль.', options: ['У них одинаковая структура.', 'Они могут хранить информацию.', 'Они работают от электричества.', 'Они содержат только числа.'], answer: 1, note: 'Это носители информации: бумага хранит запись, флешка — цифровые данные.' },
+      { phase: '2 · Информация', icon: '42', title: 'Что может содержать бумага?', copy: 'Бумага не «помнит» сама, но может нести записанные знаки.', options: ['Только физические предметы.', 'Числа, текст и изображения.', 'Только фотографии.', 'Только математические формулы.'], answer: 1, note: 'На бумаге можно записать число 42, текст, рисунок, формулу и многое другое.' },
+      { phase: '2 · Информация', icon: '💾', title: 'Что является носителем цифровой информации?', copy: 'Выбери предмет, предназначенный для хранения файлов.', options: ['Флешка.', 'Стакан.', 'Стул.', 'Мяч.'], answer: 0, note: 'Флешка хранит цифровые файлы: текст, фотографии, программы и т. д.' },
+      { phase: '2 · Информация', icon: '↔', title: 'Чем флешка отличается от чашки как контейнер?', copy: 'Сравни то, что они обычно содержат.', options: ['Флешка хранит информацию, чашка — физические вещества.', 'Флешка ничего не хранит.', 'Чашка хранит только информацию.', 'Ничем не отличается.'], answer: 0, note: 'Обе можно образно назвать контейнерами, но это разные уровни: носитель данных и физическая ёмкость.' },
+      { phase: '3 · Программирование', icon: '⌘', title: 'Что в программировании хранит одно значение по имени?', copy: 'Например: <span class="code-chip">age = 25</span>.', options: ['Переменная.', 'Монитор.', 'Клавиатура.', 'Курсор мыши.'], answer: 0, note: 'Переменная даёт значению имя, по которому к нему можно обратиться.' },
+      { phase: '3 · Программирование', icon: '25', title: 'Что является значением в записи <span class="code-chip">age = 25</span>?', copy: 'Не путай имя контейнера с его содержимым.', options: ['age', '25', 'Знак =', 'Список переменных'], answer: 1, note: 'age — имя переменной, а 25 — значение, которое в ней хранится.' },
+      { phase: '3 · Программирование', icon: '☷', title: 'Какой контейнер лучше хранит несколько чисел?', copy: 'Например: <span class="code-chip">[10, 20, 30, 40]</span>.', options: ['Обычная переменная для одного значения.', 'Список.', 'Комментарий.', 'Функция.'], answer: 1, note: 'Список — это структура данных для нескольких элементов, часто в определённом порядке.' },
+      { phase: '4 · Scratch', icon: '🟠', title: 'Какой объект Scratch хранит одно значение?', copy: 'Например, количество жизней или имя игрока.', options: ['Спрайт.', 'Переменная.', 'Костюм.', 'Сцена.'], answer: 1, note: 'Переменная Scratch может содержать число или текст.' },
+      { phase: '4 · Scratch', icon: '📋', title: 'Какой объект Scratch хранит несколько элементов по порядку?', copy: 'Например, имена игроков или предметы инвентаря.', options: ['Список.', 'Костюм.', 'Фон.', 'Звук.'], answer: 0, note: 'Список позволяет добавлять, удалять и получать элементы по их номеру.' },
+      { phase: '4 · Scratch', icon: '🐱', title: 'Что может содержать спрайт?', copy: 'Спрайт — это объект персонажа в проекте.', options: ['Только скрипты.', 'Только костюмы.', 'Только звуки.', 'Скрипты, костюмы и звуки.'], answer: 3, note: 'Верно. У каждого спрайта есть связанные с ним скрипты, костюмы и звуки.' },
+      { phase: '4 · Scratch', icon: '🎭', title: 'Где находятся варианты внешнего вида персонажа?', copy: 'Например, кадры, из которых получается анимация ходьбы.', options: ['В переменных.', 'В костюмах спрайта.', 'В списках.', 'В звуках.'], answer: 1, note: 'Костюмы — это варианты изображения спрайта. Несколько костюмов дают кадры анимации.' },
+      { phase: '4 · Scratch', icon: '🎒', title: 'Что может хранить список <span class="code-chip">Inventory</span>?', copy: 'Представь игру с рюкзаком персонажа.', options: ['Только одно число.', 'Несколько предметов инвентаря.', 'Только изображение.', 'Только звук.'], answer: 1, note: 'Список подходит для набора предметов: ключ, монета, зелье и т. п.' },
+      { phase: '4 · Scratch', icon: '🎬', title: 'Что есть у сцены (Stage) в Scratch?', copy: 'Сцена — это не спрайт, но у неё тоже есть своё содержимое.', options: ['Только переменные.', 'Фоны (backdrops) и собственные скрипты.', 'Только костюмы персонажа.', 'Только звуки каждого спрайта.'], answer: 1, note: 'У сцены есть фоны (backdrops) и её собственные скрипты. Спрайты находятся в проекте отдельно.' }
+    ];
+
+    const matching = [
+      { item: 'Пассажиры', correct: 'Машина' },
+      { item: 'Автомобиль', correct: 'Гараж' },
+      { item: 'Жидкость', correct: 'Чашка' },
+      { item: 'Записанное число или текст', correct: 'Бумага' },
+      { item: 'Цифровой файл', correct: 'Флешка' },
+      { item: 'Количество жизней в игре', correct: 'Переменная Scratch' },
+      { item: 'Список собранных предметов', correct: 'Список Scratch' },
+      { item: 'Кадры анимации персонажа', correct: 'Костюмы спрайта' }
+    ];
+    const choices = ['Машина', 'Гараж', 'Чашка', 'Бумага', 'Флешка', 'Переменная Scratch', 'Список Scratch', 'Костюмы спрайта'];
+
+    const els = {
+      counter: document.querySelector('#counter'), score: document.querySelector('#score'), progress: document.querySelector('#progressFill'),
+      question: document.querySelector('#questionView'), phase: document.querySelector('#phaseTag'), title: document.querySelector('#questionTitle'), copy: document.querySelector('#questionCopy'), answers: document.querySelector('#answers'), feedback: document.querySelector('#feedback'), next: document.querySelector('#nextButton'),
+      match: document.querySelector('#matchView'), matchList: document.querySelector('#matchList'), matchFeedback: document.querySelector('#matchFeedback'), checkMatching: document.querySelector('#checkMatching'),
+      result: document.querySelector('#resultView'), resultMark: document.querySelector('#resultMark'), resultTitle: document.querySelector('#resultTitle'), resultText: document.querySelector('#resultText'), recap: document.querySelector('#recap'), restart: document.querySelector('#restart')
+    };
+
+    let current = 0;
+    let score = 0;
+    let checked = false;
+    let matchingScore = 0;
+    let matchingChecked = false;
+    const phaseScores = { 'Физический мир': 0, 'Информация': 0, 'Программирование': 0, 'Scratch': 0 };
+
+    function phaseName(question) { return question.phase.split('· ')[1]; }
+    function updateHeader(done = current) {
+      const total = questions.length + matching.length;
+      els.counter.textContent = done < questions.length ? `Вопрос ${done + 1} из ${questions.length}` : 'Практическое задание';
+      els.score.textContent = `Баллы: ${score} / ${total}`;
+      els.progress.style.width = `${Math.round((done / total) * 100)}%`;
+    }
+    function renderQuestion() {
+      const q = questions[current];
+      checked = false;
+      updateHeader(current);
+      els.phase.innerHTML = `${q.icon} ${q.phase}`;
+      els.title.innerHTML = q.title;
+      els.copy.innerHTML = q.copy;
+      els.feedback.className = 'feedback';
+      els.feedback.textContent = '';
+      els.next.disabled = true;
+      els.next.textContent = current === questions.length - 1 ? 'К практике →' : 'Далее →';
+      els.answers.innerHTML = '';
+      q.options.forEach((option, index) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'answer';
+        btn.innerHTML = `<span class="answer-letter">${String.fromCharCode(1040 + index)}</span><span>${option}</span>`;
+        btn.addEventListener('click', () => checkAnswer(index));
+        els.answers.appendChild(btn);
+      });
+    }
+    function checkAnswer(index) {
+      if (checked) return;
+      checked = true;
+      const q = questions[current];
+      const buttons = [...els.answers.querySelectorAll('button')];
+      buttons.forEach((button, i) => {
+        button.disabled = true;
+        if (i === q.answer) button.classList.add('correct');
+        if (i === index && i !== q.answer) button.classList.add('wrong');
+      });
+      const correct = index === q.answer;
+      if (correct) {
+        score++;
+        phaseScores[phaseName(q)]++;
+      }
+      els.score.textContent = `Баллы: ${score} / ${questions.length + matching.length}`;
+      els.feedback.className = `feedback ${correct ? 'good' : 'bad'}`;
+      els.feedback.innerHTML = `<strong>${correct ? 'Верно!' : 'Пока нет.'}</strong> ${q.note}`;
+      els.next.disabled = false;
+      els.next.focus();
+    }
+    function renderMatching() {
+      els.question.style.display = 'none';
+      els.match.style.display = 'block';
+      updateHeader(questions.length);
+      els.matchList.innerHTML = '';
+      matching.forEach((row, index) => {
+        const div = document.createElement('div');
+        div.className = 'match-row';
+        div.dataset.correct = row.correct;
+        const options = ['<option value="">Выберите…</option>', ...choices.map(c => `<option value="${c}">${c}</option>`)].join('');
+        div.innerHTML = `<label class="match-item" for="match-${index}">${row.item}</label><select id="match-${index}" aria-label="Контейнер для: ${row.item}">${options}</select>`;
+        els.matchList.appendChild(div);
+      });
+      matchingChecked = false;
+      els.matchFeedback.className = 'feedback final-feedback';
+      els.matchFeedback.textContent = '';
+      els.checkMatching.textContent = 'Проверить сопоставление';
+      els.checkMatching.disabled = false;
+    }
+    function checkMatches() {
+      if (matchingChecked) return;
+      matchingChecked = true;
+      matchingScore = 0;
+      [...els.matchList.querySelectorAll('.match-row')].forEach(row => {
+        const select = row.querySelector('select');
+        const correct = select.value === row.dataset.correct;
+        row.classList.add(correct ? 'correct' : 'wrong');
+        select.disabled = true;
+        if (correct) matchingScore++;
+        else row.insertAdjacentHTML('beforeend', `<p class="match-correction">Верный вариант: <strong>${row.dataset.correct}</strong></p>`);
+      });
+      score += matchingScore;
+      els.checkMatching.disabled = true;
+      els.checkMatching.textContent = 'Проверено';
+      els.score.textContent = `Баллы: ${score} / ${questions.length + matching.length}`;
+      els.progress.style.width = '100%';
+      els.matchFeedback.className = `feedback final-feedback ${matchingScore === matching.length ? 'good' : 'bad'}`;
+      els.matchFeedback.innerHTML = `<strong>Практика: ${matchingScore} из ${matching.length}.</strong> ${matchingScore === matching.length ? 'Отлично — все пары подобраны.' : 'Зелёные строки подобраны верно; в красных указан правильный вариант.'}`;
+      const show = document.createElement('button');
+      show.className = 'primary'; show.type = 'button'; show.textContent = 'Показать результат →';
+      show.addEventListener('click', showResult);
+      els.match.querySelector('.navigation').appendChild(show);
+    }
+    function showResult() {
+      els.match.style.display = 'none';
+      els.result.style.display = 'block';
+      const total = questions.length + matching.length;
+      const percent = Math.round(score / total * 100);
+      let title = 'Хорошее начало!'; let mark = '🌱'; let text = 'Ты уже видишь путь от обычных вещей к данным в программе. Повтори отмеченные ответы — и связь станет ещё яснее.';
+      if (percent >= 88) { title = 'Отлично! Ты мастер контейнеров'; mark = '🏆'; text = 'Ты уверенно различаешь физические контейнеры, носители информации и структуры данных — и ориентируешься в Scratch.'; }
+      else if (percent >= 64) { title = 'Очень хорошо!'; mark = '✨'; text = 'Основа понятна. Осталось немного потренироваться различать объекты Scratch и то, что они содержат.'; }
+      els.resultMark.textContent = mark;
+      els.resultTitle.textContent = title;
+      els.resultText.textContent = `${score} из ${total} баллов (${percent}%). ${text}`;
+      els.recap.innerHTML = `
+        <div><b>${phaseScores['Физический мир']} / 4</b><span>Физический мир</span></div>
+        <div><b>${phaseScores['Информация']} / 4</b><span>Носители информации</span></div>
+        <div><b>${phaseScores['Программирование']} / 3</b><span>Структуры данных</span></div>
+        <div><b>${phaseScores['Scratch']} / 6</b><span>Объекты Scratch</span></div>
+        <div><b>${matchingScore} / 8</b><span>Практика</span></div>
+        <div><b>${percent}%</b><span>Общий результат</span></div>`;
+      els.counter.textContent = 'Викторина завершена';
+      window.scrollTo({ top: document.querySelector('.quiz').offsetTop - 10, behavior: 'smooth' });
+    }
+    function restart() {
+      current = 0; score = 0; matchingScore = 0; matchingChecked = false;
+      Object.keys(phaseScores).forEach(key => phaseScores[key] = 0);
+      els.result.style.display = 'none'; els.match.style.display = 'none'; els.question.style.display = 'block';
+      renderQuestion();
+      window.scrollTo({ top: document.querySelector('.quiz').offsetTop - 10, behavior: 'smooth' });
+    }
+    els.next.addEventListener('click', () => {
+      if (current < questions.length - 1) { current++; renderQuestion(); }
+      else renderMatching();
+    });
+    els.checkMatching.addEventListener('click', checkMatches);
+    els.restart.addEventListener('click', restart);
+    renderQuestion();
+  </script>
+</body>
+</html>
